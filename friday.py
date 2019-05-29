@@ -1,5 +1,5 @@
 # Voice Assistant `Friday` version Alpha 1.0 by Spider-man
-# Is developing as extend of Priler Assistant 
+# Based on the Priler assistant
 
 # Uses :
 # speech_recognition
@@ -15,14 +15,17 @@ from fuzzywuzzy import fuzz
 import pyttsx3
 import datetime
 
+
 opts = {
-    "alias":("пятница", "пятый", "пятниц"),
-    "tbr" : ("скажи", "расскажи", "покажи"),
+    "alias":("пятница", "пятый", "пятниц"), # Обращения к ассистенту
+    "tbr" : ("скажи", "расскажи", "покажи", "сколько"), # Слова, которые нужно убирать из команды
     "cmds": {
-        "ctime" : ("текущее время", "сейчас времени", "который час")
+        "ctime" : ("текущее время", "сейчас времени", "который час") # Команда и слова, по которым она определяется
     }
 }
 
+
+# Ассистент говорит
 
 def speak(what):
     print(what)
@@ -30,26 +33,21 @@ def speak(what):
     speak_engine.runAndWait()
     speak_engine.stop()
 
-def callback(recognizer, audio):
-    try:
-        voice = recognizer.recognize_google(audio, language = "ru-RU").lower()
-        print("[log] Распознано " + voice)
+# Ассистент определяет, ОБРАЩАЕМСЯ ли мы к нему
 
-        if voice.startswith(opts["alias"]):
-            cmd = voice
+def callback(voice):
+    if voice.startswith(opts["alias"]):
+        cmd = voice
 
-            for x in opts["alias"]:
-                cmd = cmd.replace(x, "").strip()
-            for x in opts['tbr']:
-                cmd = cmd.replace(x, "").strip()
+        for x in opts["alias"]:
+            cmd = cmd.replace(x, "").strip()
+        for x in opts['tbr']:
+            cmd = cmd.replace(x, "").strip()
 
-            cmd = recognize_cmd(cmd)
-            execute_cmd(cmd)
+        cmd = recognize_cmd(cmd)
+        execute_cmd(cmd['cmd'])
 
-    except sr.UnknownValueError:
-        print("[log] Голос не распознан!")
-    except sr.RequestError as e:
-        print("[log] проверьте интернет") 
+# Распознавание команды
 
 def recognize_cmd(cmd):
     RC = {'cmd' : '', "percent":0}
@@ -62,24 +60,44 @@ def recognize_cmd(cmd):
                 RC['percent'] = vrt
     return RC
 
+# Формирование ответа
 
-def execute_cmd(RC):
-    if RC["cmd"] == 'ctime':
+def execute_cmd(cmd):
+    if cmd == 'ctime':
         now = datetime.datetime.now()
-        speak("Now is " + str(now.hour) + ":" + str(now.minute))
+        speak("Сейчас " + str(now.hour) + ":" + str(now.minute))
+    else:
+        speak("Команда не распознана!")
 
+
+# Функция для прослушки
+
+def audition(source, recognizer):
+    try:
+        audio = r.listen(source)
+        voice = recognizer.recognize_google(audio, language = "ru-RU").lower()
+        print("[log] Распознано : " + voice) 
+        callback(voice)   
+    except sr.UnknownValueError:
+        print("[log] Голос не распознан!")
+    except sr.RequestError as e:
+        print("[log] Проверьте интернет") 
 
 #Start
-r = sr.Recognizer()
-m = sr.Microphone(device_index = 1)
-
-with m as source:
-    r.adjust_for_ambient_noise(source)
 
 speak_engine = pyttsx3.init()
 
+### Настройка голоса для ассистента (мужской, женский и т.д.)
+voices = speak_engine.getProperty('voices')
+speak_engine.setProperty('voice', voices[6].id)
+###
 
-speak("Hello")
 
-stop_listening = r.listen_in_background(m, callback)
-while True: time.sleep(0.1)
+speak("Добрый день!") # Приветствие
+
+if __name__ == "__main__":
+    r = sr.Recognizer()
+    with sr.Microphone(device_index = 1) as source:
+        r.adjust_for_ambient_noise(source) # recognizer прослушивает 1 секунду и запоминает звук шума, чтобы потом не путать его с твоим голосом
+        while 1: # Бесконечная прослушка
+            audition(source, r)
