@@ -14,13 +14,17 @@ import speech_recognition as sr
 from fuzzywuzzy import fuzz
 import pyttsx3
 import datetime
+from modules.weather import weather_main
+import webbrowser
 
 
 opts = {
     "alias":("пятница", "пятый", "пятниц"), # Обращения к ассистенту
-    "tbr" : ("скажи", "расскажи", "покажи", "сколько"), # Слова, которые нужно убирать из команды
+    "tbr" : ("скажи", "расскажи", "покажи", "сколько", "какая"), # Слова, которые нужно убирать из команды
     "cmds": {
-        "ctime" : ("текущее время", "сейчас времени", "который час") # Команда и слова, по которым она определяется
+        "ctime" : ("текущее время", "сейчас времени", "который час"), # Команда и слова, по которым она определяется
+        "weather" : ("погода", "погодка", "что на улице"),
+        "vk" : ("открой вк", "вк", "вконтакте", "в контакте")
     }
 }
 
@@ -66,8 +70,12 @@ def execute_cmd(cmd):
     if cmd == 'ctime':
         now = datetime.datetime.now()
         speak("Сейчас " + str(now.hour) + ":" + str(now.minute))
+    elif cmd == 'weather':
+        speak(weather_main())
+    elif cmd == "vk":
+        webbrowser.open('https://vk.com/feed', new = 0)
     else:
-        speak("Команда не распознана!")
+        speak("Что вам нужно!")
 
 
 # Функция для прослушки
@@ -99,5 +107,6 @@ if __name__ == "__main__":
     r = sr.Recognizer()
     with sr.Microphone(device_index = 1) as source:
         r.adjust_for_ambient_noise(source) # recognizer прослушивает 1 секунду и запоминает звук шума, чтобы потом не путать его с твоим голосом
-        while 1: # Бесконечная прослушка
+        while True: # Бесконечная прослушка
+            time.sleep(0.1)
             audition(source, r)
