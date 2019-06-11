@@ -30,7 +30,7 @@ def weather_main():
 
     if 'cloud' in description:
         dvar = 'облачно'
-    elif 'sun' in descriptin:
+    elif 'sun' in description:
         dvar = 'солнечно'
     elif 'rain' in description:
         dvar = "дождь"

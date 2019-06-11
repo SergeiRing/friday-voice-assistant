@@ -15,6 +15,7 @@ from fuzzywuzzy import fuzz
 import pyttsx3
 import datetime
 from modules.weather import weather_main
+from modules.wiki import *
 import webbrowser
 
 
@@ -24,7 +25,8 @@ opts = {
     "cmds": {
         "ctime" : ("текущее время", "сейчас времени", "который час"), # Команда и слова, по которым она определяется
         "weather" : ("погода", "погодка", "что на улице"),
-        "vk" : ("открой вк", "вк", "вконтакте", "в контакте")
+        "vk" : ("открой вк", "вк", "вконтакте", "в контакте"),
+        "what is it" : ("что такое", "кто такой")
     }
 }
 
@@ -49,24 +51,30 @@ def callback(voice):
             cmd = cmd.replace(x, "").strip()
 
         cmd = recognize_cmd(cmd)
-        execute_cmd(cmd['cmd'])
+        execute_cmd(cmd['cmd'], cmd["moreover"])
 
 # Распознавание команды
 
 def recognize_cmd(cmd):
-    RC = {'cmd' : '', "percent":0}
+    RC = {'cmd' : '', "percent":0, "moreover" : ""}
 
     for c, v in opts["cmds"].items():
         for x in v:
             vrt = fuzz.ratio(cmd, x)
             if vrt > RC['percent']:
+
+                ###
+                if c == "what is it":
+                    RC["moreover"] = cmd.replace('что такое', '').replace('кто такой', '')
+                ###
+
                 RC['cmd'] = c
                 RC['percent'] = vrt
     return RC
 
 # Формирование ответа
 
-def execute_cmd(cmd):
+def execute_cmd(cmd, moreover):
     if cmd == 'ctime':
         now = datetime.datetime.now()
         speak("Сейчас " + str(now.hour) + ":" + str(now.minute))
@@ -74,6 +82,9 @@ def execute_cmd(cmd):
         speak(weather_main())
     elif cmd == "vk":
         webbrowser.open('https://vk.com/feed', new = 0)
+    elif cmd == "what is it":
+        query = moreover
+        speak(get_info(get_link(urlgen(query))))
     else:
         speak("Что вам нужно!")
 
