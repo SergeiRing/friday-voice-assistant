@@ -16,17 +16,39 @@ def get_link(url):
 
 def get_info(links):
     info = ''
+    articles = {}
     for link in links:
         cleantext = ''
         r = requests.get(link).text
         soup = BeautifulSoup(r, 'lxml')
-        block = soup.find('div', id='content').find('div', id='bodyContent').find_all('p')
+        block = soup.find('div', id = 'content').find('div', id='bodyContent').find_all('p')
+        title = soup.find('h1', id = 'firstHeading')
         for item in block:
             cleanr = re.compile('<.*?>')
             cleantext += re.sub(cleanr, '', str(item))
         cleantext = cleantext[0:500]
-        info += cleantext
-        info += '\n'
-        info += link
-        info += '\n\n'
-    return info
+        title = str(re.sub(re.compile('<.*?>'), '', str(title)))
+        articles[title] = [cleantext]
+        articles[title].append(link) 
+    return articles
+
+# Определяем по ссылке сущность объекта
+# Выдаём варианты пользователю
+
+
+
+##query = input('--> ')
+
+#articles = get_info(get_link(urlgen(query)))
+
+#print(articles)
+
+
+#for title in articles.keys():
+    #
+#number = input('--> ')
+#if number.isdigit():
+ #   print(articles[list(articles.keys())[int(number)-1]])
+
+#else:
+   # print(articles[number])

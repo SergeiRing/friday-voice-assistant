@@ -13,7 +13,7 @@ def weather_main():
         icon = '❄'
     else:
         icon = '💧'
-    temp = r['main']['temp']
+    temp = str(r['main']['temp'])
     description = r['weather'][0]['description']
    # country = r['sys']['country']
    # wind = r['wind']['speed']
@@ -21,9 +21,9 @@ def weather_main():
    # sunset = r['sys']['sunset']
    # sunrise = time.strftime('%H : %M', time.localtime(int(sunrise + 60*60*3)))
    # sunset = time.strftime('%H : %M', time.localtime(int(sunset + 60*60*3)))
-    if temp == 1:
+    if int(temp[-1]) == 1:
         tvar = 'градус'
-    elif temp < 5:
+    elif int(temp[-1]) < 5:
         tvar = 'градуса'
     else:
         tvar = 'градусов'
@@ -36,6 +36,8 @@ def weather_main():
         dvar = "дождь"
     elif 'snow' in description:
         dvar = "снег"
+    elif 'clear' in description:
+        dvar = 'чистое небо'
 
 
-    return 'На улице : {}\n{} {}'.format(dvar, int(temp), tvar)
+    return 'На улице : {}\n{} {}'.format(dvar, int(float(temp)), tvar)
