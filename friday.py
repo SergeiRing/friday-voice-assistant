@@ -14,22 +14,11 @@ import speech_recognition as sr
 from fuzzywuzzy import fuzz
 import pyttsx3
 import datetime
-from modules.weather import weather_main
+from modules.weather import *
 from modules.wiki import *
+from modules.cinema import *
+from data import opts
 import webbrowser
-
-
-opts = {
-    "alias":("пятница", "пятый", "пятниц"), # Обращения к ассистенту
-    "tbr" : ("скажи", "расскажи", "покажи", "сколько", "какая", "давай"), # Слова, которые нужно убирать из команды
-    "cmds": {
-        "ctime" : ("текущее время", "сейчас времени", "который час"), # Команда и слова, по которым она определяется
-        "weather" : ("погода", "погодка", "что на улице"),
-        "vk" : ("открой вк", "вк", "вконтакте", "в контакте"),
-        "what is it" : ("что такое", "кто такой", "кто такая")
-    }
-}
-
 
 # Ассистент говорит
 
@@ -62,9 +51,9 @@ def callback(voice):
             execute_cmd(cmd['cmd'], argument)
 
 
-        
 
-        
+
+
 
 
 # Распознавание команды
@@ -95,28 +84,43 @@ def execute_cmd(cmd, argument):
         speak(weather_main())
     elif cmd == "vk":
         webbrowser.open('https://vk.com/feed', new = 0)
+    elif cmd == "cinema":
+        speak(get_page_data(get_html()))
     elif cmd == "what is it":
         query = argument
         articles = get_info(get_link(urlgen(query)))
-        for title in articles.keys():    
+        for title in articles.keys():
             speak(title)
         all_articles = list(articles.keys())
         if not all_articles:
             speak("Информация не найдена")
             return None
-        speak("Какой пункт вам надо?")
+        speak("Какой пункт вам нужен?")
         answer = record_voice(None)
-        for x in opts['alias']:
-            answer = answer.replace(x, '').strip()
-        for x in opts['tbr']:
-            answer = answer.replace(x, '').strip()
-        if answer == 'первый':
+        if answer == None:
             answer = 1
-        elif answer == 'второй':
-            answer = 2
-        elif answer == 'третий':
-            answer = 3
-        needed_article = articles[all_articles[int(answer)-1]]
+        else:
+            for x in opts['alias']:
+                answer = answer.replace(x, '').strip()
+            for x in opts['tbr']:
+                answer = answer.replace(x, '').strip()
+            if answer.isdigit():
+                answer = int(answer)
+            elif answer == 'первый':
+                answer = 1
+            elif answer == 'второй':
+                answer = 2
+            elif answer == 'третий':
+                answer = 3
+            else:
+                for title in all_articles:
+                    if str(answer) in title:
+                        print(title)
+                        answer = all_articles.index(title) + 1
+                        break
+                    else:
+                        answer = 1
+        needed_article = articles[all_articles[answer-1]]
         speak(needed_article[0])
         speak("Перейти по ссылке для подробной информации?")
         if record_voice(None) == 'да':
@@ -134,13 +138,13 @@ def recognition(source, recognizer):
     try:
         audio = recognizer.listen(source)
         voice = recognizer.recognize_google(audio, language = "ru-RU").lower()
-        print("[log] Распознано : " + voice) 
-        return voice   
+        print("[log] Распознано : " + voice)
+        return voice
     except sr.UnknownValueError:
         print("[log] Голос не распознан!")
         pass
     except sr.RequestError as e:
-        print("[log] Проверьте интернет") 
+        print("[log] Проверьте интернет")
         pass
 
 
@@ -170,4 +174,3 @@ speak("Добрый день!") # Приветствие
 if __name__ == "__main__":
     r = sr.Recognizer()
     record_voice(callback)
-

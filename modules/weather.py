@@ -1,18 +1,13 @@
 import requests
 import time
+from data import urls
 
 
-url = 'https://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=ed5ab228302bc87016834e2355ae4f2b'
+url = urls['openweathermap']
 
 def weather_main():
     town = 'kostomuksha'
     r = requests.get(url.format(town)).json()
-    if r['weather'][0]['main'] == 'Clear':
-        icon = '☀'
-    elif r['weather'][0]['main'] == 'Snow':
-        icon = '❄'
-    else:
-        icon = '💧'
     temp = str(r['main']['temp'])
     description = r['weather'][0]['description']
    # country = r['sys']['country']
@@ -21,9 +16,9 @@ def weather_main():
    # sunset = r['sys']['sunset']
    # sunrise = time.strftime('%H : %M', time.localtime(int(sunrise + 60*60*3)))
    # sunset = time.strftime('%H : %M', time.localtime(int(sunset + 60*60*3)))
-    if int(temp[-1]) == 1:
+    if int(str(int(float(temp)))[-1]) == 1:
         tvar = 'градус'
-    elif int(temp[-1]) < 5:
+    elif int(str(int(float(temp)))[-1]) < 5 and int(str(int(float(temp)))[-1]) != 0:
         tvar = 'градуса'
     else:
         tvar = 'градусов'
