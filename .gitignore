@@ -1,4 +1,7 @@
-__pycache__/
-*.py[cod]
-modules/__pycache__/
+*.log
+*.pot
+*.pyc
+*/*/*/__pycache__/
+*/*/__pycache__/
+*/__pycache__/
 test/
