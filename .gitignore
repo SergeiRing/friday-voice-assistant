@@ -1,5 +1,5 @@
 *.log
 *.pot
 *.pyc
-__pycache__
-modules/__pycache__
+*__pycache__
+*modules/__pycache__
